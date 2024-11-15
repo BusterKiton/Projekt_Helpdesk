@@ -1,0 +1,7 @@
+How to setup
+pip install Django
+instalacja postgresql
+instalacja pgadmin4
+pip install psycopg2
+pip install Pillow
+pip manage.py runserver
