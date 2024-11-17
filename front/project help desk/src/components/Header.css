@@ -1,0 +1,113 @@
+/* Header.css */
+
+/* Nagłówek */
+.header {
+  display: flex;
+  position: sticky; /* Przykleja nagłówek do góry strony podczas przewijania */
+  top: 0; /* Przykleja nagłówek, gdy osiągnie górę okna przeglądarki */
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 5%;
+  background-color: #0078d7; /* Niebieski kolor nagłówka */
+  color: #fff;
+}
+
+/* Logo */
+.logo {
+  height: 10vw; /* Logo skaluje się proporcjonalnie do szerokości ekranu */
+  max-height: 60px; /* Maksymalna wysokość dla dużych ekranów */
+  width: auto;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: transform 0.5s ease;
+}
+
+.logo:hover {
+  transform: scale(1.2);
+}
+
+/* Przyciski nawigacyjne */
+.nav-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap; /* Pozwala na zawijanie przycisków na mniejszych ekranach */
+}
+
+/* Styl przycisku z ikoną */
+.icon-button {
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 50%; /* Zaokrąglony przycisk */
+  width: 50px; /* Szerokość przycisku */
+  height: 50px; /* Wysokość przycisku */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease; /* Dodajemy płynne przejście na przycisku */
+  border: none; /* Usunięcie obramowania */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Delikatny cień */
+}
+
+/* Powiększenie całego przycisku wraz z ikoną przy najechaniu */
+.icon-button:hover {
+  transform: scale(1.3); /* Powiększenie przycisku o 20% */
+}
+.icon-button:hover {
+  box-shadow: 0 10px 10px rgba(20, 17, 17, 0.2); /* Zwiększony cień przy najechaniu */
+}
+/* Styl dla obrazka ikony */
+
+.icon {
+  width: 30px; /* Szerokość ikony */
+  height: 30px; /* Wysokość ikony */
+  border: none; /* Usuń obramowanie, jeśli występuje */
+  animation: pulse 3s infinite; /* Podstawowa animacja */
+}
+
+/* Unikalne opóźnienia dla każdej ikony */
+.icon-home {
+  animation-delay: 0s; /* Ikona Home zaczyna od razu */
+}
+.icon-submit {
+  animation-delay: 0.3s; /* Ikona Submit Issue z opóźnieniem */
+}
+.icon-profile {
+  animation-delay: 0.6s; /* Ikona Profile z opóźnieniem */
+}
+.icon-log {
+  animation-delay: 0.9s; /* Ikona Profile z opóźnieniem */
+}
+
+/* Definicja animacji pulsowania */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1); /* Normalny rozmiar */
+  }
+  50% {
+    transform: scale(1.1); /* Powiększenie o 10% */
+  }
+}
+/* Media queries dla responsywności */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column; /* Nagłówek w kolumnie na małych ekranach */
+    align-items: center;
+  }
+
+  .nav-buttons {
+    justify-content: center; /* Wyśrodkowanie przycisków */
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-button {
+    width: 15vw; /* Zwiększenie skalowania przycisków */
+    height: 15vw;
+  }
+
+  .icon {
+    width: 10vw;
+    height: 10vw;
+  }
+}
