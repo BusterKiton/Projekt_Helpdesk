@@ -1,0 +1,26 @@
+<h1>Zarejestruj się tutaj</h1>
+<style>
+h5{
+    color: red;
+}    
+</style>
+{% for message in messages%}
+<h5>{{message}}</h5>
+{% endfor %}
+<form method="POST" action="register">
+    {% csrf_token %}
+    <p>Nazwa użytkownika: </p>
+    <input type="text" name="username"/>
+    <p>Email: </p>
+    <input type="email" name="email"/>
+    <p>Hasło: </p>
+    <input type="password" name="password"/>
+    <p>Powtórz hasło: </p>
+    <input type="password" name="password2"/>
+    <p>Wybierz swoje prawa użytkownika:</p>
+    <input type="radio" id="admin" name="user_rights" value="admin" />
+    <label for="admin">Admin</label><br>
+    <input type="radio" id="user" name="user_rights" value="user" checked />
+    <label for="user">User</label><br>
+    <input type="submit"/>
+</form>

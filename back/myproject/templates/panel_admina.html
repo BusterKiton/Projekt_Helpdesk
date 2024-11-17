@@ -1,0 +1,6 @@
+{% if user.is_authenticated %}
+<h1>Helpdesk witaj {{user.username}} znajdujesz się w panelu admina</h1>
+{% else %}
+<h1>Helpdesk</h1>
+{% endif %}
+
