@@ -1,7 +1,75 @@
-How to setup
-pip install Django
-instalacja postgresql
-instalacja pgadmin4
-pip install psycopg2
-pip install Pillow
-pip manage.py runserver
+1. Instalacja Python
+Python 3.10 (lub nowszy): Możesz pobrać go z oficjalnej strony Python.org.
+2. Pakiety Python (za pomocą pip)
+Poniżej znajdują się pakiety, które trzeba zainstalować:
+
+Django: Framework backendowy.
+sh
+Skopiuj kod
+pip install django
+djangorestframework: Narzędzie do tworzenia API.
+sh
+Skopiuj kod
+pip install djangorestframework
+django-cors-headers: Aby umożliwić komunikację pomiędzy backendem a frontendem.
+sh
+Skopiuj kod
+pip install django-cors-headers
+psycopg2-binary: Adapter do komunikacji z bazą PostgreSQL.
+sh
+Skopiuj kod
+pip install psycopg2-binary
+django-rest-framework authtoken: Używane do zarządzania tokenami autoryzacji.
+sh
+Skopiuj kod
+pip install djangorestframework
+3. Instalacja PostgreSQL
+PostgreSQL: Baza danych, którą wykorzystujesz. Możesz pobrać ją stąd: PostgreSQL Download.
+Po instalacji, pamiętaj o utworzeniu użytkownika i bazy danych, którą będziesz używać w projekcie.
+4. Instalacja Node.js oraz npm/yarn
+Node.js: Potrzebny do uruchamiania frontendu w React.
+Możesz pobrać Node.js z oficjalnej strony: Node.js Download.
+Node.js zawiera npm – menedżera pakietów.
+Alternatywnie możesz zainstalować yarn jako menedżer pakietów, co bywa preferowane przez niektórych deweloperów.
+sh
+Skopiuj kod
+npm install -g yarn
+5. Pakiety dla Reacta
+Uruchom te polecenia w folderze projektu frontendowego:
+
+react-router-dom: Aby zarządzać trasami w aplikacji React.
+sh
+Skopiuj kod
+npm install react-router-dom
+axios: Do wysyłania żądań HTTP z frontendu do backendu.
+sh
+Skopiuj kod
+npm install axios
+6. Dodatkowe narzędzia i konfiguracje
+Django Extensions (opcjonalnie): Umożliwia przydatne rozszerzenia, takie jak runserver_plus.
+sh
+Skopiuj kod
+pip install django-extensions
+Gunicorn (do produkcji): W celu uruchamiania projektu Django w środowisku produkcyjnym.
+sh
+Skopiuj kod
+pip install gunicorn
+Webpack, Babel, etc. (do budowania frontendu): Jeśli nie używasz Create React App, będziesz potrzebować narzędzi do bundlowania, takich jak Webpack. Jeżeli korzystasz z Create React App, to te narzędzia są już skonfigurowane.
+7. Konfiguracja środowiska
+Plik .env: Warto utworzyć plik .env dla przechowywania ustawień środowiska, takich jak klucz tajny, dane dostępu do bazy danych. Możesz użyć python-dotenv do załadowania zmiennych środowiskowych z pliku .env.
+sh
+Skopiuj kod
+pip install python-dotenv
+Podsumowanie Instalacji
+Aby uprościć instalację, poniżej znajdują się zbiorcze komendy, które powinieneś uruchomić:
+
+Backend (Python/Django)
+
+sh
+Skopiuj kod
+pip install django djangorestframework django-cors-headers psycopg2-binary django-extensions python-dotenv
+Frontend (React)
+
+sh
+Skopiuj kod
+npm install react-router-dom axios
