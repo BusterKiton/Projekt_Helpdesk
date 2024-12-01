@@ -5,6 +5,7 @@ from .models import Profile
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login as auth_login
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +16,7 @@ User = get_user_model()
 
 logger = logging.getLogger(__name__)
 class HelloWorld(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         return Response({"message": "Hello from Django!"})
 # Create your views here.
