@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-from .models import Profile
+from .models import Profile,Ticket
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth import get_user_model
 import logging
+
 User = get_user_model()
 
 logger = logging.getLogger(__name__)
@@ -130,3 +131,21 @@ def login(request):
             return redirect('login')
 
     return render(request, 'login.html')
+
+# Tickets Vievs
+
+# Dodać zwracanie listy tasków użytkownika
+class UserTicketsApiView(APIView):
+    permission_classes = [IsAuthenticated]
+    valid_roles = ['admin', 'user', 'worker']
+    def get(self,request):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.valid_roles:
+            return Response({"message": "Tu będą twoje zgłoszone tickety. Kiedyś..."}, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
