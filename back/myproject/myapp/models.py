@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .managers import ProfileManager
+from .managers import ProfileManager, TicketManager
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -28,9 +28,9 @@ class Ticket(models.Model):
     handler_worker = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="handled_tickets", null=True,
                                        blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    objects = TicketManager()
 
 
-# NIE DZIAŁA
     def get_handler_worker_if_exist(self):
         if self.handler_worker:
             return self.handler_worker.user.username

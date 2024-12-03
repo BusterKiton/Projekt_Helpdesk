@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-from .models import Profile,Ticket
+from .models import Profile, Ticket
+from .serializers import TicketSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -16,13 +17,20 @@ import logging
 User = get_user_model()
 
 logger = logging.getLogger(__name__)
+
+
 class HelloWorld(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         return Response({"message": "Hello from Django!"})
+
+
 # Create your views here.
 def index(request):
     return render(request, 'index.html')
+
+
 class RegisterView(APIView):
     def post(self, request):
         username = request.data.get('username')
@@ -36,10 +44,12 @@ class RegisterView(APIView):
 
         # Sprawdzenie, czy użytkownik już istnieje
         if User.objects.filter(username=username).exists():
-            return Response({"message": "Użytkownik o podanej nazwie już istnieje."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Użytkownik o podanej nazwie już istnieje."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if User.objects.filter(email=email).exists():
-            return Response({"message": "Użytkownik z podanym adresem e-mail już istnieje."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Użytkownik z podanym adresem e-mail już istnieje."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         # Tworzenie użytkownika
         user = User.objects.create_user(username=username, email=email, password=password)
@@ -49,13 +59,12 @@ class RegisterView(APIView):
 
         return Response({"message": "Rejestracja zakończona sukcesem."}, status=status.HTTP_201_CREATED)
 
+
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginAPIView(APIView):
     def post(self, request):
@@ -69,9 +78,12 @@ class LoginAPIView(APIView):
 
         if user is not None:
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({"message": "Logowanie zakończone sukcesem.", "token": token.key}, status=status.HTTP_200_OK)
+            return Response({"message": "Logowanie zakończone sukcesem.", "token": token.key},
+                            status=status.HTTP_200_OK)
         else:
             return Response({"message": "Nieprawidłowe dane logowania."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
 def register(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -102,11 +114,18 @@ def register(request):
             return redirect('register')
     else:
         return render(request, 'register.html')
+
+
 def panel_admina(request):
     return render(request, 'panel_admina.html')
+
+
 def panel_usera(request):
     return render(request, 'panel_usera.html')
+
+
 User = get_user_model()
+
 
 def login(request):
     if request.method == 'POST':
@@ -132,20 +151,42 @@ def login(request):
 
     return render(request, 'login.html')
 
+
 # Tickets Vievs
 
 # Dodać zwracanie listy tasków użytkownika
 class UserTicketsApiView(APIView):
     permission_classes = [IsAuthenticated]
     valid_roles = ['admin', 'user', 'worker']
-    def get(self,request):
+
+    def get(self, request):
         user = request.user
         profile = Profile.objects.by_user(user).first()
         if profile.user_rights in self.valid_roles:
-            return Response({"message": "Tu będą twoje zgłoszone tickety. Kiedyś..."}, status=status.HTTP_200_OK)
+            tasks = Ticket.objects.by_requester(profile)
+            serializer = TicketSerializer(tasks, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
                 {'message': 'Błąd autoryzacji'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
+class WorkerTicketsApiView(APIView):
+    permission_classes = [IsAuthenticated]
+    valid_roles = ['admin', 'worker']
+
+    def get(self, request):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.valid_roles:
+            tasks = Ticket.objects.by_worker(profile)
+            serializer = TicketSerializer(tasks, many=True)
+            print(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
