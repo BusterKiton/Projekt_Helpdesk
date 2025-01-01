@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
 from .models import Profile, Ticket
@@ -154,7 +154,6 @@ def login(request):
 
 # Tickets Vievs
 
-# Dodać zwracanie listy tasków użytkownika
 class UserTicketsApiView(APIView):
     permission_classes = [IsAuthenticated]
     valid_roles = ['admin', 'user', 'worker']
@@ -172,6 +171,23 @@ class UserTicketsApiView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+    def post(self, request):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.valid_roles:
+            data = request.data.copy()
+            data['requester'] = profile.id
+            serializer = TicketSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
 
 class WorkerTicketsApiView(APIView):
     permission_classes = [IsAuthenticated]
@@ -183,10 +199,71 @@ class WorkerTicketsApiView(APIView):
         if profile.user_rights in self.valid_roles:
             tasks = Ticket.objects.by_worker(profile)
             serializer = TicketSerializer(tasks, many=True)
-            print(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
                 {'message': 'Błąd autoryzacji'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+
+class TicketApiView(APIView):
+    permission_classes = [IsAuthenticated]
+    workers_roles = ['admin', 'worker']
+    valid_roles = ['admin', 'user', 'worker']
+
+    def get(self, request, id):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.valid_roles:
+            obj = get_object_or_404(Ticket, id=id)
+            if ((profile.user_rights == 'user' and profile.id == obj.requester.id) or
+                    (profile.user_rights in self.workers_roles)):
+                serializer = TicketSerializer(obj)
+                return Response(serializer.data)
+            else:
+                return Response(
+                    {'message': 'Błąd autoryzacji1'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+    def put(self, request, id):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.valid_roles:
+            obj = get_object_or_404(Ticket, id=id)
+            if ((profile.user_rights == 'user' and profile.id == obj.requester.id) or
+                    (profile.user_rights in self.workers_roles)):
+                serializer = TicketSerializer(obj, data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(
+                    {'message': 'Błąd autoryzacji1'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+    def delete(self, request, id):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.workers_roles:
+            obj = get_object_or_404(Ticket, id=id)
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_401_UNAUTHORIZED
             )
