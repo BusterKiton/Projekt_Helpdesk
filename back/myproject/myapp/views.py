@@ -189,6 +189,51 @@ class UserTicketsApiView(APIView):
             )
 
 
+class FreeTicketsApiView(APIView):
+    permission_classes = [IsAuthenticated]
+    valid_roles = ['admin', 'worker']
+
+    def get(self, request):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.valid_roles:
+            tasks = Ticket.objects.free_tickets()
+            serializer = TicketSerializer(tasks, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class TakeTicketsApiView(APIView):
+    permission_classes = [IsAuthenticated]
+    valid_roles = ['admin', 'worker']
+
+    def put(self, request, id):
+        user = request.user
+        profile = Profile.objects.by_user(user).first()
+        if profile.user_rights in self.valid_roles:
+            obj = get_object_or_404(Ticket, id=id)
+            if obj.handler_worker is None:
+                obj.handler_worker = profile
+                obj.save()  # Zapisanie zmian w obiekcie Ticket
+                return Response({'message': "Przyjęto zgłoszenie"}, status=status.HTTP_200_OK)
+
+            else:
+                return Response(
+                    {'message': 'Zgłoszenie zajęte'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+        else:
+            return Response(
+                {'message': 'Błąd autoryzacji'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+
 class WorkerTicketsApiView(APIView):
     permission_classes = [IsAuthenticated]
     valid_roles = ['admin', 'worker']
@@ -261,7 +306,8 @@ class TicketApiView(APIView):
         if profile.user_rights in self.workers_roles:
             obj = get_object_or_404(Ticket, id=id)
             obj.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            answer = 'Usunięto pomyślnie id: ' + str(id)
+            return Response({'message': answer}, status.HTTP_200_OK)
         else:
             return Response(
                 {'message': 'Błąd autoryzacji'},

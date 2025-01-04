@@ -12,3 +12,6 @@ class TicketManager(models.Manager):
 
     def by_worker(self, worker):
         return self.filter(handler_worker=worker)
+
+    def free_tickets(self):
+        return self.filter(handler_worker=None)
