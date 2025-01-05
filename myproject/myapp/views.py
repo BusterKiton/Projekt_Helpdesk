@@ -2,8 +2,51 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-from .models import Profile
-# Create your views here.
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import Profile, FileAttachment, Ticket
+from .serializers import FileAttachmentSerializer, TicketSerializer
+from django.core.cache import cache
+import redis
+
+# API Endpoint do przesyłania plików
+class FileUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, ticket_id, *args, **kwargs):
+        try:
+            # Pobierz zgłoszenie
+            ticket = Ticket.objects.get(id=ticket_id)
+
+            # Pobierz plik
+            file = request.FILES['file']
+
+            # Walidacja rozmiaru pliku
+            if file.size > 10 * 1024 * 1024:  # 10 MB limit
+                return Response({"error": "File too large"}, status=400)
+
+            # Tworzenie załącznika
+            attachment = FileAttachment.objects.create(
+                ticket=ticket,
+                uploaded_by=request.user,
+                file=file
+            )
+            return Response(FileAttachmentSerializer(attachment).data, status=201)
+        except Ticket.DoesNotExist:
+            return Response({"error": "Ticket not found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+# API Endpoint do listy zgłoszeń
+class TicketListView(APIView):
+    def get(self, request):
+        tickets = Ticket.objects.all()
+        serializer = TicketSerializer(tickets, many=True)
+        return Response(serializer.data)
+
+# Widoki HTML
 def index(request):
     return render(request, 'index.html')
 
@@ -23,14 +66,14 @@ def register(request):
                 messages.info(request, 'Nazwa użytkownika jest zajęta')
                 return redirect('register')
             else:
+                # Tworzenie użytkownika
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
 
-                # Ustaw prawa użytkownika
-                profile = Profile.objects.get(user=user)
-                profile.user_rights = user_rights
-                profile.save()
+                # Tworzenie profilu użytkownika
+                Profile.objects.create(user=user, user_rights=user_rights)
 
+                messages.success(request, 'Rejestracja zakończona sukcesem!')
                 return redirect('login')
         else:
             messages.info(request, 'Hasła nie są te same')

@@ -13,6 +13,50 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth import get_user_model
 import logging
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import Profile, FileAttachment, Ticket
+from .serializers import FileAttachmentSerializer, TicketSerializer
+from django.core.cache import cache
+import redis
+from django.shortcuts import render
+
+# API Endpoint do przesyłania plików
+class FileUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, ticket_id, *args, **kwargs):
+        try:
+            # Pobierz zgłoszenie
+            ticket = Ticket.objects.get(id=ticket_id)
+
+            # Pobierz plik
+            file = request.FILES['file']
+
+            # Walidacja rozmiaru pliku
+            if file.size > 10 * 1024 * 1024:  # 10 MB limit
+                return Response({"error": "File too large"}, status=400)
+
+            # Tworzenie załącznika
+            attachment = FileAttachment.objects.create(
+                ticket=ticket,
+                uploaded_by=request.user,
+                file=file
+            )
+            return Response(FileAttachmentSerializer(attachment).data, status=201)
+        except Ticket.DoesNotExist:
+            return Response({"error": "Ticket not found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+# API Endpoint do listy zgłoszeń
+class TicketListView(APIView):
+    def get(self, request):
+        tickets = Ticket.objects.all()
+        serializer = TicketSerializer(tickets, many=True)
+        return Response(serializer.data)
 
 User = get_user_model()
 
@@ -24,7 +68,9 @@ class HelloWorld(APIView):
 
     def get(self, request):
         return Response({"message": "Hello from Django!"})
-
+    
+def chat_view(request, ticket_id):
+    return render(request, 'chat.html', {'ticket_id': ticket_id})
 
 # Create your views here.
 def index(request):

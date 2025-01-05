@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
+    'channels' # to jest do chatu 
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'myproject.urls'
+
+ASGI_APPLICATION = 'myproject.asgi.application' # chat
 
 TEMPLATES = [
     {
@@ -81,11 +84,20 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'myproject',
-        'USER': 'postgres',
-        'PASSWORD': 'zaq1@WSX',
-        'HOST': 'localhost'
+        'NAME': 'myproject',  # Nazwa bazy danych
+        'USER': 'postgres',   # Użytkownik PostgreSQL
+        'PASSWORD': 'haslo1',  # Hasło użytkownika
+        'HOST': 'localhost',  # Adres serwera
+        # 'PORT': '5435',       # Port wybranej wersji PostgreSQL
     }
+}
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
 }
 
 
@@ -143,3 +155,16 @@ AUTHENTICATION_BACKENDS = [
     'myapp.authentication.EmailBackend',  # Dodajemy niestandardowy backend
     'django.contrib.auth.backends.ModelBackend',  # Zachowujemy domyślny backend
 ]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'example'
+    }
+}

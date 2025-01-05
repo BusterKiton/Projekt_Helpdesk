@@ -18,6 +18,12 @@ urlpatterns = [
     path('api/get_ticket/<int:id>/', TakeTicketsApiView.as_view(), name='user-tickets'),
     path('api/worker/tickets/', WorkerTicketsApiView.as_view(), name='worker-tickets'),
     path('api/ticket/<int:id>/', TicketApiView.as_view(), name='ticket'),
+    path('api/tickets/', views.TicketListView.as_view(), name='ticket-list'),  # Lista zgłoszeń
+    path('api/upload/', views.FileUploadView.as_view(), name='file-upload'),  # Przesyłanie plików
+    path('ws/chat/<int:ticket_id>/', views.chat_view, name='chat-view'),
+
+
+    path('ws/chat/<int:ticket_id>/', views.chat_view, name='chat-view'),  
     # api/user              informacje o użytkowniku / edycja danych użytkownika
     # api/worker/ticket     ubsługa ticketu przez pracownika
     # api/ticket            wyświetlanie ticketu przez użytkownika / dodawanie
